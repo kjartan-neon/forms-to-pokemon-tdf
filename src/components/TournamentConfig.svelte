@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { onMount } from 'svelte';
   import type { PlayerData } from '../utils/csvUtils';
   import { generateTdfXml } from '../utils/xmlGenerator';
   
@@ -9,6 +10,22 @@
   export let city: string;
   export let startDate: string;
   export let players: PlayerData[] = [];
+  
+  // Load from localStorage on mount
+  onMount(() => {
+    const savedOrganizerName = localStorage.getItem('organizerName');
+    const savedOrganizerPopId = localStorage.getItem('organizerPopId');
+    
+    if (savedOrganizerName) {
+      organizerName = savedOrganizerName;
+    }
+    if (savedOrganizerPopId) {
+      organizerPopId = savedOrganizerPopId;
+    }
+    
+    // Trigger initial config change to update parent component
+    handleChange();
+  });
   
   const dispatch = createEventDispatcher<{
     configChange: {
@@ -21,6 +38,14 @@
   }>();
   
   function handleChange() {
+    // Save organizer info to localStorage
+    if (organizerName) {
+      localStorage.setItem('organizerName', organizerName);
+    }
+    if (organizerPopId) {
+      localStorage.setItem('organizerPopId', organizerPopId);
+    }
+    
     dispatch('configChange', {
       organizerName,
       organizerPopId,
@@ -55,6 +80,19 @@
     }
   }
   
+  function generateFilename(): string {
+    if (tournamentName) {
+      // Replace spaces with dashes and remove special characters
+      return tournamentName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+    }
+    return `tournament-${Date.now()}`;
+  }
+  
   $: canDownload = players.length > 0 && organizerName && organizerPopId;
   
   function downloadTdf() {
@@ -73,7 +111,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tournament-${Date.now()}.tdf`;
+    a.download = `${generateFilename()}.tdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

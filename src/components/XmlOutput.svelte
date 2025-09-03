@@ -32,11 +32,24 @@
   function downloadXml() {
     if (!xmlContent) return;
     
+    const generateFilename = (): string => {
+      if (config.tournamentName) {
+        // Replace spaces with dashes and remove special characters
+        return config.tournamentName
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .trim();
+      }
+      return `tournament-${Date.now()}`;
+    };
+    
     const blob = new Blob([xmlContent], { type: 'application/xml' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tournament-${Date.now()}.tdf`;
+    a.download = `${generateFilename()}.tdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
