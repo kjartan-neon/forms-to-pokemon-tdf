@@ -18,7 +18,7 @@
   let tournamentConfig: TournamentConfig = {
     organizerName: '',
     organizerPopId: '',
-    tournamentName: 'My Pokemon Challenge',
+    tournamentName: 'My Scrambleswitch.com Pokemon Challenge',
     city: 'Update',
     startDate: new Date().toISOString().split('T')[0]
   };
